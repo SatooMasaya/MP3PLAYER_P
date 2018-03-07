@@ -200,17 +200,14 @@ public class Engine implements ShuffleEngine{
 
         List<Song>[] LoveList = new ArrayList[LoveValueMax + 1];//LoveValueMaxの数だけ用意する。
 
-
         for (int i = 0; i < LoveValueMax + 1; i++) {
             LoveList[i] = new ArrayList();
         }
 
-        for (int i = 0; i < TOTAL; i++) {
-            System.out.println(NowList.get(i).LoveValue);
-        }
         //LoveValueの値より振り分ける。
         for (int i = 0; i < TOTAL; i++) {
-            switch (NowList.get(i).LoveValue){
+            int value = NowList.get(i).LoveValue;
+            switch (value){
                 case 1:
                     LoveList[1].add(NowList.get(i));
                     break;
@@ -229,14 +226,19 @@ public class Engine implements ShuffleEngine{
             }
         }
 
-        NowList = new ArrayList<Song>() ;
+        NowList = new ArrayList<Song>();
 
         //それぞれのリストをそのリストの中でシャッフルして、NowListに結合する。
-        for (int i = LoveValueMax; i == 1; i--) {
+        for (int i = LoveValueMax; i >= 1; i--) {
             if(LoveList[i].size() != 0){
                 Collections.shuffle(LoveList[i]);//シャッフル
                 NowList.addAll(LoveList[i]);//結合
             }
+        }
+
+
+        for (int i = 0; i < TOTAL; i++) {
+            System.out.println(NowList.get(i).LoveValue);
         }
 
         //再生番号を１番（リストの要素は０に対応）にする
