@@ -5,14 +5,7 @@ import java.io.IOException;
 import java.util.*;
 
 import java.io.*;
-import java.net.MalformedURLException;
 
-import javafx.scene.media.AudioClip;
-
-import javafx.application.Application;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.stage.Stage;
 
 /**
  * next「次へ再生」、shuffle「シャッフル再生」の仕様
@@ -71,30 +64,31 @@ public class Engine implements ShuffleEngine{
 
         String songname = "";
         int lovevalue = 0;
-        int number = 0;//配列ssの配列番号
-        int cnt = 0;//曲数のカウント
+        int line = 0;//曲数のカウント
         Song[] ss;//代入用
 
 
         //データにいくつ曲が入っているかの確認をする。
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("SongData.txt"), "SJIS"));
         while(br.readLine() != null) {
-            cnt++;
+            line++;
         }
-        TOTAL  = cnt;//総曲数を記録する。
+        TOTAL  = line;//総曲数を記録する。
 
 
         //配列ssにすべての曲を代入する。
         br = new BufferedReader(new InputStreamReader(new FileInputStream("SongData.txt"), "SJIS"));
         ss = new Song[TOTAL];
-        String entry;
+        String entry;//一行の文を一時記録する変数
+        line = 0;
+
         while ((entry = br.readLine()) != null) {//ファイルから一行読む
             Scanner sc = new Scanner(entry);
-            if (sc.hasNext()) songname = sc.next();
-            if (sc.hasNextInt()) lovevalue = sc.nextInt();
-            System.out.println(number + songname + lovevalue);
-            ss[number] = new Song(songname, lovevalue);
-            number++;
+            if (sc.hasNext()) songname = sc.next();//曲名取得
+            if (sc.hasNextInt()) lovevalue = sc.nextInt();//曲の優先度取得
+            System.out.println(line + songname + lovevalue);
+            ss[line] = new Song(songname, lovevalue);//Songに曲データをいれる
+            line++;
         }
         br.close();
 
@@ -194,23 +188,20 @@ public class Engine implements ShuffleEngine{
 
     /**
      * ラブシャッフルメソッド
-     * Songデータを参照して、LoveValueが高い曲からランダムにソートされる
+     * NowListにある曲Songの値LoveValueを基準に、その値が高い曲からランダムにソートされる
      */
     public void LoveShuffle() {
 
         List<Song>[] LoveList = new ArrayList[LoveValueMax + 1];//LoveValueMaxの数だけ用意する。
 
-
         for (int i = 0; i < LoveValueMax + 1; i++) {
             LoveList[i] = new ArrayList();
         }
 
-        for (int i = 0; i < TOTAL; i++) {
-            System.out.println(NowList.get(i).LoveValue);
-        }
         //LoveValueの値より振り分ける。
         for (int i = 0; i < TOTAL; i++) {
-            switch (NowList.get(i).LoveValue){
+            int value = NowList.get(i).LoveValue;
+            switch (value){
                 case 1:
                     LoveList[1].add(NowList.get(i));
                     break;
@@ -229,14 +220,19 @@ public class Engine implements ShuffleEngine{
             }
         }
 
-        NowList = new ArrayList<Song>() ;
+        NowList = new ArrayList<Song>();
 
         //それぞれのリストをそのリストの中でシャッフルして、NowListに結合する。
-        for (int i = LoveValueMax; i == 1; i--) {
+        for (int i = LoveValueMax; i >= 1; i--) {
             if(LoveList[i].size() != 0){
                 Collections.shuffle(LoveList[i]);//シャッフル
                 NowList.addAll(LoveList[i]);//結合
             }
+        }
+
+
+        for (int i = 0; i < TOTAL; i++) {
+            System.out.println(NowList.get(i).LoveValue);
         }
 
         //再生番号を１番（リストの要素は０に対応）にする
@@ -277,18 +273,10 @@ public class Engine implements ShuffleEngine{
     public String getSongOrderText(){
         //SongOrderTextにPEEKMAX分の曲名を曲順に並べて保存している。
         for (int i = 0; i < PEEKMAX; i++) {
-            SongOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + "      ";
+            SongOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + "     ->     ";
         }
 
         return SongOrderText;
 
-        //ここから下は気にしないでください。
-        //SongOrderTextにPEEKMAX分の曲名を保存している
-        //for (int i = 0; i < PEEKMAX; i++) {
-        //    if (i == NowPlayingNumber) {
-        //        SongOrderText += "♪" + peekQueue()[i].name + " ";
-        //    }else{
-        //        SongOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + " ";
-        //    }
     }
 }

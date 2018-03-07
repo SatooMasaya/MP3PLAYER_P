@@ -18,9 +18,12 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+        //背景設定
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Music PLAYER");
-        primaryStage.setScene(new Scene(root, 550, 125));
+        primaryStage.setScene(new Scene(root, 600, 125));
+        primaryStage.getIcons();
         primaryStage.show();
 
         //SongData.txtの全曲を読み込み、NowListにいれる。
