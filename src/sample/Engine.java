@@ -192,6 +192,7 @@ public class Engine implements ShuffleEngine{
      */
     public void LoveShuffle() {
 
+
         List<Song>[] LoveList = new ArrayList[LoveValueMax + 1];//LoveValueMaxの数だけ用意する。
 
         for (int i = 0; i < LoveValueMax + 1; i++) {

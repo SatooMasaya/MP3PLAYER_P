@@ -50,8 +50,8 @@
             </Button>
          </children>
       </HBox>
-      <TextField fx:id="NowPlayingTextField" layoutX="271.0" layoutY="6.0" prefHeight="50.0" prefWidth="287.0" />
+      <TextField fx:id="NowPlayingTextField" layoutX="257.0" layoutY="6.0" prefHeight="50.0" prefWidth="301.0" />
       <TextField fx:id="SongOrderTextField" layoutX="9.0" layoutY="64.0" prefHeight="26.0" prefWidth="551.0" />
-      <RadioButton layoutX="240.0" layoutY="-2.0" mnemonicParsing="false" onAction="#onLoveButtonClicked" />
+      <RadioButton layoutX="240.0" layoutY="-2.0" mnemonicParsing="false" onAction="#onLoveButtonClicked" prefHeight="60.0" prefWidth="21.0" />
    </children>
 </AnchorPane>

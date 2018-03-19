@@ -8,6 +8,8 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 import static sample.Main.SongEngine;
+import static sample.Main.media;
+import static sample.Main.mplayer;
 
 public class Controller {
     /**
@@ -19,16 +21,6 @@ public class Controller {
      * 上に表示するテキスト。現在再生される曲を表示。
      */
     public TextField NowPlayingTextField;
-
-    /**
-     * メディア。何を再生するのかを決める。
-     */
-    Media media = new Media(new File("おやすみ.mp3").toURI().toString());
-
-    /**
-     * プレイヤー。
-     */
-    MediaPlayer m = new MediaPlayer(media);
 
     /**
      * ロック。再生中に、一時停止する時に使用する。
@@ -46,15 +38,21 @@ public class Controller {
     boolean checkLoveButton = true;
 
 
+
+
     /**
      * 前へ再生ボタンアクションメソッド
      * @param actionEvent
      */
     public void onBackPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
+
+        mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
+                //前の再生されている曲を止める。
+
         // 前に再生した曲を手に入れ、その曲を再生する
         media = new Media(new File(SongEngine.getBackSong().name + ".mp3").toURI().toString());
-        m = new MediaPlayer(media);
-        m.play();
+        mplayer = new MediaPlayer(media);
+        mplayer.play();
         LOCK = false;
 
         //上のテキストフィールドに次の再生中の曲名を表示する
@@ -72,33 +70,28 @@ public class Controller {
      */
     public void onPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
+
+
         //一回押すと再生し、もう一度押すと一時停止する
         if (LOCK) {//再生ボタンをおした場合
             // 曲が流れる。流れる曲はNowListの再生番号NowPlayingNumberである。
-
-            m.play();//仕様上、再生が終了すると、再び再生することができないことに注意
+            mplayer.play();//仕様上、再生が終了すると、再び再生することができないことに注意
 
             LOCK = false;
         }else{//再生中におした場合
             //曲が止まる。
-            m.pause();
+            mplayer.pause();
             LOCK = true;
         }
 
         //再生が終了したとき、再び同じ曲を再生できるコード
-        if (m.getStopTime().toSeconds() == m.getCurrentTime().toSeconds()){//再生が終了して、もう一度再生ボタンを押した場合、
-            m.stop();//このメソッドが使われるときには既に再生は終了しているが、
+        if (mplayer.getStopTime().toSeconds() == mplayer.getCurrentTime().toSeconds()){//再生が終了して、もう一度再生ボタンを押した場合、
+            mplayer.stop();//このメソッドが使われるときには既に再生は終了しているが、
                      //このメソッドを使用すれば、再び再生が可能になる。
-            m.play();
+            mplayer.play();
             LOCK = false;
         }
 
-        //上のテキストフィールドに次の再生中の曲名を表示する
-        NowPlayingTextField.setText("Now playing  " + SongEngine.NowList.get(SongEngine.NowPlayingNumber).name);
-
-        //下のテキストフィールドにPEEKMAX分の曲順を表示する。
-        SongOrderTextField.setText(SongEngine.getSongOrderText());
-        SongEngine.SongOrderText = "";
     }
 
     /**
@@ -106,11 +99,35 @@ public class Controller {
      * @param actionEvent
      */
     public void onNextPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
+
+        mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
+                //前の再生されている曲を止める。
+
+        //Runnable     repeatFunc      = () ->
+        //{
+            // 連続再生ボタンの状態を取得し
+            //if( true )
+            //{
+                //media = new Media(new File(SongEngine.getNextSong().name + ".mp3").toURI().toString());
+                //mplayer = new MediaPlayer(media);
+                // 頭だしして再生
+            //    mplayer.seek( mplayer.getStartTime() );
+            //    mplayer.play();
+            //}else{
+                // 頭だしして停止
+            //    mplayer.seek( mplayer.getStartTime() );
+            //    mplayer.stop();
+            //};
+        //};
+
         // 次に再生する曲を手に入れ、その曲を再生する
         media = new Media(new File(SongEngine.getNextSong().name + ".mp3").toURI().toString());
-        m = new MediaPlayer(media);
-        m.play();
+        mplayer = new MediaPlayer(media);
+
+        //mplayer.setOnEndOfMedia(repeatFunc);
+        mplayer.play();
         LOCK = false;
+
 
         //上のテキストフィールドに次の再生中の曲名を表示する
         NowPlayingTextField.setText("Now playing  " + SongEngine.NowList.get(SongEngine.NowPlayingNumber).name);
@@ -118,6 +135,7 @@ public class Controller {
         //下のテキストフィールドにPEEKMAX分の曲順を表示する。
         SongOrderTextField.setText(SongEngine.getSongOrderText());
         SongEngine.SongOrderText = "";
+
     }
 
     /**
@@ -125,6 +143,9 @@ public class Controller {
      * @param actionEvent
      */
     public void onShufflePlayButtonClicked(javafx.event.ActionEvent actionEvent) {
+
+        mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
+        //前の再生されている曲を止める。
 
         //シャッフルモードの確認
         if(LoveShaffleMode){
@@ -135,8 +156,8 @@ public class Controller {
         }
 
         media = new Media(new File(SongEngine.NowList.get(0).name + ".mp3").toURI().toString());
-        m = new MediaPlayer(media);
-        m.play();
+        mplayer = new MediaPlayer(media);
+        mplayer.play();
         LOCK = false;
 
 
