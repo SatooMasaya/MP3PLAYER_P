@@ -1,5 +1,6 @@
 package sample;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,12 +22,12 @@ public class Main extends Application {
     public static Engine SongEngine = new Engine();
 
     /**
-     * メディア。何を再生するのかを決める。
+     * メディア。何を再生するのかを決める。1曲のみの情報があるCDのようなもの。
      */
     public static Media media = new Media(new File("おやすみ.mp3").toURI().toString());
 
     /**
-     * プレイヤー。再生、一時停止、停止ができる。
+     * 再生プレイヤー。mediaに代入されたmp3を再生、一時停止、停止ができる。
      */
     public static MediaPlayer mplayer = new MediaPlayer(media);
 
@@ -47,12 +48,6 @@ public class Main extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        //System.out.println(mplayer.isAutoPlay());
-        //mplayer.setAutoPlay(true);
-        //System.out.println(mplayer.isAutoPlay());
-        // 連続再生設定
-
 
     }
 

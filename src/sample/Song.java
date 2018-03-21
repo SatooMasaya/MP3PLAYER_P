@@ -5,7 +5,14 @@ package sample;
  * @author Sato Masaya
  */
 public class Song {
+    /**
+     * 曲名
+     */
     String name;
+
+    /**
+     * 優先度
+     */
     int LoveValue;
 
     //コンストラクト

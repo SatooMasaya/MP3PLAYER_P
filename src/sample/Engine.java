@@ -3,7 +3,6 @@ package sample;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
-
 import java.io.*;
 
 
@@ -42,7 +41,6 @@ public class Engine implements ShuffleEngine{
         */
 
 
-
     /**
      * 今のリストNowListにすべての曲を保存するメソッド
      * @param songs 曲の配列
@@ -57,7 +55,7 @@ public class Engine implements ShuffleEngine{
     }
 
     /**
-     * 全曲の名前データ(SongData)を読み込みNowListに保存するメッソド
+     * 全曲の名前データ(SongData)を読み込みNowListに保存するメソッド
      * @throws IOException
      */
     public void songDataInSet() throws IOException{
