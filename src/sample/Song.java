@@ -13,12 +13,12 @@ public class Song {
     /**
      * 優先度
      */
-    int LoveValue;
+    int loveValue;
 
     //コンストラクト
     public Song(String n, int l){
         this.name = n;
-        this.LoveValue = l;
+        this.loveValue = l;
     }
 
     public Song(String n){

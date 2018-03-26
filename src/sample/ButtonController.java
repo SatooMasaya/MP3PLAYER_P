@@ -21,22 +21,22 @@ public class ButtonController {
     /**
      * 下に表示するテキスト。曲順を現在の曲から５曲までを表示。
      */
-    public TextField SongOrderTextField;
+    public TextField songOrderTextField;
 
     /**
      * 上に表示するテキスト。現在再生される曲を表示。
      */
-    public TextField NowPlayingTextField;
+    public TextField nowPlayingTextField;
 
     /**
      * ロック。再生中に、一時停止する時に使用する。falseのとき一時停止が可能。
      */
-    boolean LOCK = true;
+    boolean lock = true;
 
     /**
      * シャッフルモード。trueなら、なら、ラブシャッフル。falseなら、通常シャッフル。
      */
-    boolean LoveShaffleMode = false;
+    boolean loveShaffleMode = false;
 
     /**
      *  LoveButton（ラジオボタン）に確認マークがついているかの確認。
@@ -55,10 +55,10 @@ public class ButtonController {
         mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
                 //前の再生されている曲を止める。
 
-        // 前に再生した曲を手に入れ、その曲を再生する
+        // 前に再生した曲を手に入れ、その曲を再生するそのあと自動再生。
         media = new Media(new File(SongEngine.getBackSong().name + ".mp3").toURI().toString());
         mplayer = new MediaPlayer(media);
-        AutoPlay();
+        autoPlay();
 
     }
 
@@ -69,13 +69,13 @@ public class ButtonController {
     public void onPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
         //一回押すと再生し、もう一度押すと一時停止する
-        if (LOCK) {//再生ボタンをおした場合
-            // 曲が流れる。流れる曲はNowListの再生番号NowPlayingNumberである。
-            AutoPlay();
+        if (lock) {//再生ボタンをおした場合
+            // 曲が流れる。流れる曲はNowListの再生番号NowPlayingNumberである。そのあと自動再生。
+            autoPlay();
         }else{//再生中におした場合
             //曲が止まる。
             mplayer.pause();
-            LOCK = true;
+            lock = true;
         }
 
     }
@@ -89,12 +89,10 @@ public class ButtonController {
         mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
                 //前の再生されている曲を止める。
 
-        // 次に再生する曲を手に入れ、その曲を再生する
-
-        //再生が終了して、もう一度再生ボタンを押した場合、
+        // 次に再生する曲を手に入れ、その曲を再生する。そのあと自動再生。
         media = new Media(new File(SongEngine.getNextSong().name + ".mp3").toURI().toString());
         mplayer = new MediaPlayer(media);
-        AutoPlay();
+        autoPlay();
 
     }
 
@@ -107,25 +105,27 @@ public class ButtonController {
         mplayer.stop();//前にかかっている曲と次に再生する曲が同時にかかるのを防ぐため、
         //前の再生されている曲を止める。
 
-        //シャッフルモードの確認
-        if(LoveShaffleMode){
-            SongEngine.LoveShuffle();
+        //シャッフルモードの確認と実行
+        if(loveShaffleMode){
+            SongEngine.loveShuffle();//ラブシャッフルを実行。
         }else{
-            SongEngine.Shuffle();
+            SongEngine.shuffle(SongEngine.nowList);//シャッフルを実行。
         }
 
-        media = new Media(new File(SongEngine.NowList.get(0).name + ".mp3").toURI().toString());
+        //シャッフル後、NowListのはじめの曲を再生。その後、自動再生。
+        media = new Media(new File(SongEngine.nowList.get(0).name + ".mp3").toURI().toString());
         mplayer = new MediaPlayer(media);
-        AutoPlay();
+        autoPlay();
     }
 
     public void onLoveButtonClicked(ActionEvent actionEvent) {
 
         if (checkLoveButton) {//LoveButton（ラジオボタン）の確認マークをつけたら
-            LoveShaffleMode = true;//LoveShaffleModeを適用
+
+            loveShaffleMode = true;//LoveShaffleModeを適用
             checkLoveButton = false;//次に押すとマークが消えるので、まえもってfalseに変更
         }else{//LoveButton（ラジオボタン）の確認マークをけしたら
-            LoveShaffleMode = false;//LoveShaffleModeを解除
+            loveShaffleMode = false;//LoveShaffleModeを解除
             checkLoveButton = true;//次に押すとマークがtつくのでまえもってtrueに変更
         }
 
@@ -135,10 +135,10 @@ public class ButtonController {
      * オートプレイメソッド
      * 自動再生（今の曲をきいたら、次の曲が自動でかかる）を可能にするメソッド
      */
-    public void AutoPlay(){
-        Runnable []repeatFunc = new Runnable[SongEngine.TOTAL - SongEngine.NowPlayingNumber +1];//NowListの中でまだ聴いていない分の曲数を配列数として配列を用意する
+    public void autoPlay(){
+        Runnable[]repeatFunc = new Runnable[SongEngine.total - SongEngine.NowPlayingNumber +1];//NowListの中でまだ聴いていない分の曲数を配列数として配列を用意する
 
-        for (int i = 0; i < SongEngine.TOTAL - SongEngine.NowPlayingNumber; i++) {
+        for (int i = 0; i < SongEngine.total - SongEngine.NowPlayingNumber; i++) {
             int cnt = i;//カウント変数cntはiと同じ値をとる。iだと思ってよい。
 
             //Runnable関数repeatFunc[cnt + 1]を定義します。
@@ -148,13 +148,13 @@ public class ButtonController {
                 mplayer = new MediaPlayer(media);//mplayerにmediaの情報をいれる。
                 mplayer.setOnEndOfMedia(repeatFunc[cnt]);//mplayerの再生終了時の設定を決定する。設定内容はRunnable関数repeatFunc[cnt]である。
                 mplayer.play();//再生
-                LOCK = false;//一時停止可能状態にする。
+                lock = false;//一時停止可能状態にする。
 
                 //上のテキストフィールドに次の再生中の曲名を表示する
-                NowPlayingTextField.setText("Now playing  " + SongEngine.NowList.get(SongEngine.NowPlayingNumber).name);
+                nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
 
                 //下のテキストフィールドにPEEKMAX分の曲順を表示する。
-                SongOrderTextField.setText(SongEngine.getSongOrderText());
+                songOrderTextField.setText(SongEngine.getSongOrderText());
                 SongEngine.SongOrderText = "";
             };
         }
@@ -166,25 +166,25 @@ public class ButtonController {
             mplayer = new MediaPlayer(media);//mplayerにmediaの情報をいれる。
             mplayer.setOnEndOfMedia(repeatFunc[1]);//mplayerの再生終了時の設定を決定する。設定内容はRunnable関数repeatFunc[1]である。
             mplayer.play();//再生
-            LOCK = false;//一時停止可能状態にする
+            lock = false;//一時停止可能状態にする
 
             //上のテキストフィールドに次の再生中の曲名を表示する
-            NowPlayingTextField.setText("Now playing  " + SongEngine.NowList.get(SongEngine.NowPlayingNumber).name);
+            nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
 
             //下のテキストフィールドにPEEKMAX分の曲順を表示する。
-            SongOrderTextField.setText(SongEngine.getSongOrderText());
+            songOrderTextField.setText(SongEngine.getSongOrderText());
             SongEngine.SongOrderText = "";
         };
 
         mplayer.setOnEndOfMedia(repeatFunc[0]);//mplayerの再生終了時の設定を決定する。設定内容はRunnable関数repeatFunc[0]である。
         mplayer.play();//再生
-        LOCK = false;//一時停止可能状態にする
+        lock = false;//一時停止可能状態にする
 
         //上のテキストフィールドに次の再生中の曲名を表示する
-        NowPlayingTextField.setText("Now playing  " + SongEngine.NowList.get(SongEngine.NowPlayingNumber).name);
+        nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
 
         //下のテキストフィールドにPEEKMAX分の曲順を表示する。
-        SongOrderTextField.setText(SongEngine.getSongOrderText());
+        songOrderTextField.setText(SongEngine.getSongOrderText());
         SongEngine.SongOrderText = "";
 
     }

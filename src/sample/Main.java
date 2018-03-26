@@ -1,16 +1,12 @@
 package sample;
 
-import com.sun.org.apache.xpath.internal.SourceTree;
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -37,13 +33,13 @@ public class Main extends Application {
         //背景設定
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Cacco Music PLAYER");
-        primaryStage.setScene(new Scene(root, 600, 125));
+        primaryStage.setScene(new Scene(root, 650, 125));
         primaryStage.getIcons();
         primaryStage.show();
 
         //SongData.txtの全曲を読み込み、NowListにいれる。
         try {
-            SongEngine.songDataInSet();
+            SongEngine.setSongData();
 
         } catch (IOException e) {
             e.printStackTrace();

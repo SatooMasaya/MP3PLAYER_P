@@ -1,0 +1,69 @@
+@startuml
+
+class Main
+class Apllication
+class Song
+class ButtonController
+interface ShuflleEngine
+
+Application <|-- Main
+Engine o-- Main
+ShuflleEngine <|-- Engine
+
+
+class Main{
+    public static Engine SongEngine
+    public static Media media
+    public static MediaPlayer mplayer
+    public static void main(String[] args)
+    public void start(Stage primaryStage)
+}
+
+class Song{
+    String name;
+    int LoveValue;
+
+    public Song(String n, int l)
+    public Song(String n)
+}
+
+class Engine {
+
+    public final Integer PEEKMAX
+    public final Integer LoveValueMax
+    int NowPlayingNumber
+    int TOTAL
+    String SongOrderText
+    List<Song> NowList
+    List<Song> OldList
+
+    public void setSongs(Song[] songs)
+    public void songDataInSet()
+    public Song getNextSong()
+    public Song getBackSong()
+    public void Shuffle()
+    public void LoveShuffle()
+    public Song[] peekQueue()
+    public String getSongOrderText()
+}
+
+class ButtonController{
+    public TextField SongOrderTextField
+    public TextField NowPlayingTextField
+    boolean LoveShaffleMode
+    boolean checkLoveButton
+    public void onBackPlayButtonClicked(javafx.event.ActionEvent actionEvent)
+    public void onPlayButtonClicked(javafx.event.ActionEvent actionEvent)
+    public void onNextPlayButtonClicked(javafx.event.ActionEvent actionEvent)
+    public void onShufflePlayButtonClicked(javafx.event.ActionEvent actionEvent)
+    public void onLoveButtonClicked(ActionEvent actionEvent)
+    public void AutoPlay()
+}
+
+interface ShuflleEngine{
+    public Song[] peekQueue()
+    public void setSongs(Song[] songs)
+    public Song[] peekQueue()
+}
+
+@enduml

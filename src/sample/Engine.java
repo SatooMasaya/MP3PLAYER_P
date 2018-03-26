@@ -13,32 +13,24 @@ import java.io.*;
 public class Engine implements ShuffleEngine{
 
     /**先読みする曲の上限数*/
-    public final Integer PEEKMAX = 5;
+    public final Integer PEEK_MAX = 5;
 
-    /**ラブシャッフルするとき、ソートするときの優先度*/
-    public final Integer LoveValueMax = 5;
+    /**ラブシャッフルするとき、ソートするときの優先度数*/
+    public final Integer LOVE_VALUE_MAX = 5;
 
     /**再生番号*/
     int NowPlayingNumber = 0;
-    //playSong()を使用した時、再生番号NowPlayingNumberに対応するリストの曲を再生
+    //再生ボタンを押した時、再生番号NowPlayingNumberに対応するリストの曲を再生
 
-    /**曲の総数*/
-    int TOTAL = 0;
+    /**SongDataにある曲の総数*/
+    int total = 0;
 
     /**PEEKMAX分の曲名を保存するテキスト*/
     String SongOrderText = "";
     //このテキストは、テキストフィールドSongOrderTextFieldに表示される
 
     /**今のリスト*/
-    List<Song> NowList = new ArrayList<Song>();
-
-    /**過去のリスト*/
-    List<Song> OldList = new ArrayList<Song>();
-        /*今のリストと過去のリストはシャッフルメソッドで使う。
-        シャッフル前のリストを過去のリストへ
-        シャッフル後のリストを今のリストへ保存するために
-        用意した。
-        */
+    List<Song> nowList = new ArrayList<Song>();
 
 
     /**
@@ -48,8 +40,8 @@ public class Engine implements ShuffleEngine{
     public void setSongs(Song[] songs){
 
         //今のリストNowListにすべての曲（TOTAL分の曲）を保存
-        for (int i = 0; i < TOTAL; i++) {
-            NowList.add(songs[i]);
+        for (int i = 0; i < total; i++) {
+            nowList.add(songs[i]);
         }
 
     }
@@ -58,7 +50,7 @@ public class Engine implements ShuffleEngine{
      * 全曲の名前データ(SongData)を読み込みNowListに保存するメソッド
      * @throws IOException
      */
-    public void songDataInSet() throws IOException{
+    public void setSongData() throws IOException{
 
         String songname = "";
         int lovevalue = 0;
@@ -71,12 +63,12 @@ public class Engine implements ShuffleEngine{
         while(br.readLine() != null) {
             line++;
         }
-        TOTAL  = line;//総曲数を記録する。
+        total = line;//総曲数を記録する。
 
 
         //配列ssにすべての曲を代入する。
         br = new BufferedReader(new InputStreamReader(new FileInputStream("SongData.txt"), "SJIS"));
-        ss = new Song[TOTAL];
+        ss = new Song[total];
         String entry;//一行の文を一時記録する変数
         line = 0;
 
@@ -90,7 +82,7 @@ public class Engine implements ShuffleEngine{
         }
         br.close();
 
-        //NowListに保存する
+        //nowListに保存する
         setSongs(ss);
     }
 
@@ -104,12 +96,12 @@ public class Engine implements ShuffleEngine{
         NowPlayingNumber++;
 
         //もしすべての曲が流れたら、最初の曲に戻る
-        if (NowPlayingNumber == TOTAL) {
+        if (NowPlayingNumber == total) {
             NowPlayingNumber = 0;
         }
 
         //Song型で宣言
-        Song nextSong = NowList.get(NowPlayingNumber);
+        Song nextSong = nowList.get(NowPlayingNumber);
 
         return nextSong;
 
@@ -133,110 +125,116 @@ public class Engine implements ShuffleEngine{
         }
 
         //Song型で宣言
-        Song backSong = NowList.get(NowPlayingNumber);
+        Song backSong = nowList.get(NowPlayingNumber);
 
         return backSong;
     }
 
     /**
      *  シャッフルメソッド
-     *　最初に1巡分の曲順を決定しておくロジック
-     *  曲の再生が2巡目になったら,1巡目と違う順番になるよう。
+     *  @param list
+     *　最初に1巡分の曲順を決定しておくロジックである。
+     *  1巡分の曲順を決めるとき、前の一巡分の曲順とかぶらないように決めている。
      */
-    public void Shuffle(){
+    public void shuffle(List<Song> list){
+
+        List<Song> oldList = new ArrayList<Song>();//過去のリスト（シャッフル前のリストを保存するために用意したリスト）
 
         //今のリストのすべての曲を過去のリストへコピー
-        for (int i = 0; i < TOTAL; i++) {
-            OldList.add(i, NowList.get(i));
+        for (int i = 0; i < list.size(); i++) {
+            oldList.add(i, list.get(i));
         }
 
         //今のリストの曲の順番をシャッフル
-        Collections.shuffle(NowList);
+        Collections.shuffle(list);
 
         /*
         ここでは、過去のリスト（シャッフル前の曲の順番）と
         今のリスト（シャッフル後の曲の順番）を比較している。
         */
-        for (int i = 0; i < TOTAL; i++) {
+        for (int i = 0; i < list.size(); i++) {
 
             //２つのリストが違うなら、ループから出る（条件を満たすシャッフルが成功）
-            if(OldList.get(i)!=NowList.get(i)){
+            if(oldList.get(i)!= list.get(i)){
                 break;
             }
 
             //２つのリストが同じなら、今のリストをシャッフルし、ループをもう一度やり直す。(シャッフル失敗）
-            else if(i==(TOTAL-1)){
-                Collections.shuffle(NowList);
+            else if(i==(list.size() -1)){
+                Collections.shuffle(list);
                 i=0;
             }
         }
 
 
-        //プロンプト上に曲順と曲名を表示
-        for (int i = 0; i < TOTAL; i++) {
-            System.out.print(NowList.get(i).name+ "  ->  ");
+        //プロンプト上に曲順と曲名、優先度を表示
+        //消しても動作に影響はでない。
+        for (int i = 0; i < list.size(); i++) {
+            System.out.print(list.get(i).name + " " + list.get(i).loveValue + "  ->  ");
+
+            //再生番号を１番（リストの要素は０に対応）にする
+            if (i == total-1) {
+                NowPlayingNumber = 0;
+
+                //この改行は、プロンプト上の出力結果に表示されるnowListの全要素（一巡の曲たち）が見やすくなる。
+                //消しても動作に影響はない。
+                System.out.println("");
+            }
         }
-        System.out.println();
 
-
-        //再生番号を１番（リストの要素は０に対応）にする
-        NowPlayingNumber = 0;
     }
 
 
     /**
      * ラブシャッフルメソッド
-     * NowListにある曲Songの値LoveValueを基準に、その値が高い曲からランダムにソートされる
+     * nowListにある曲Songの値LoveValueを基準に、その値が高い曲からランダムにソートされ、
+     * nowListには、高い優先度の曲から入る。
      */
-    public void LoveShuffle() {
+    public void loveShuffle() {
 
+        List<Song>[] loveList = new ArrayList[LOVE_VALUE_MAX + 1];//Love_Value_Maxの数だけ用意する。
 
-        List<Song>[] LoveList = new ArrayList[LoveValueMax + 1];//LoveValueMaxの数だけ用意する。
-
-        for (int i = 0; i < LoveValueMax + 1; i++) {
-            LoveList[i] = new ArrayList();
+        for (int i = 0; i < LOVE_VALUE_MAX + 1; i++) {
+            loveList[i] = new ArrayList();
         }
 
-        //LoveValueの値より振り分ける。
-        for (int i = 0; i < TOTAL; i++) {
-            int value = NowList.get(i).LoveValue;
+        //loveValueの値より振り分ける。
+        for (int i = 0; i < total; i++) {
+            int value = nowList.get(i).loveValue;
             switch (value){
                 case 1:
-                    LoveList[1].add(NowList.get(i));
+                    loveList[1].add(nowList.get(i));
                     break;
                 case 2:
-                    LoveList[2].add(NowList.get(i));
+                    loveList[2].add(nowList.get(i));
                     break;
                 case 3:
-                    LoveList[3].add(NowList.get(i));
+                    loveList[3].add(nowList.get(i));
                     break;
                 case 4:
-                    LoveList[4].add(NowList.get(i));
+                    loveList[4].add(nowList.get(i));
                     break;
                 case 5:
-                    LoveList[5].add(NowList.get(i));
+                    loveList[5].add(nowList.get(i));
                     break;
             }
         }
 
-        NowList = new ArrayList<Song>();
+        nowList = new ArrayList<Song>();//nowListの中身を一旦、空にします。
 
         //それぞれのリストをそのリストの中でシャッフルして、NowListに結合する。
-        for (int i = LoveValueMax; i >= 1; i--) {
-            if(LoveList[i].size() != 0){
-                Collections.shuffle(LoveList[i]);//シャッフル
-                NowList.addAll(LoveList[i]);//結合
+        for (int i = LOVE_VALUE_MAX; i >= 1; i--) {
+            if(loveList[i].size() != 0){
+                shuffle(loveList[i]);//シャッフル
+                nowList.addAll(loveList[i]);//結合
+            }
+
+            //この下のコードは、プロンプト上の出力結果に表示されるnowListの全要素（一巡の曲たち）が見やすくなる。
+            //消しても動作に影響はでない。
+            if (i == 1){
+                System.out.println("");
             }
         }
-
-
-        for (int i = 0; i < TOTAL; i++) {
-            System.out.println(NowList.get(i).LoveValue);
-        }
-
-        //再生番号を１番（リストの要素は０に対応）にする
-        NowPlayingNumber = 0;
-
     }
 
     /**
@@ -250,7 +248,7 @@ public class Engine implements ShuffleEngine{
     public Song[] peekQueue(){
 
         //PEEKMAXの数を上限とする配列を宣言
-        Song[] Songs = new Song[PEEKMAX];
+        Song[] Songs = new Song[PEEK_MAX];
 
             /*
             配列に今のリストNowListの曲を入れる。
@@ -258,8 +256,8 @@ public class Engine implements ShuffleEngine{
             順に入れていって最後の曲を入れても、未代入のSongs[i]があるとき
             最初の曲を順に入れる。
             */
-        for (int i = 0; i < PEEKMAX; i++) {
-            Songs[i] = NowList.get((NowPlayingNumber + i) % TOTAL);
+        for (int i = 0; i < PEEK_MAX; i++) {
+            Songs[i] = nowList.get((NowPlayingNumber + i) % total);
         }
 
         return Songs;
@@ -271,7 +269,7 @@ public class Engine implements ShuffleEngine{
      */
     public String getSongOrderText(){
         //SongOrderTextにPEEKMAX分の曲名を曲順に並べて保存している。
-        for (int i = 0; i < PEEKMAX; i++) {
+        for (int i = 0; i < PEEK_MAX; i++) {
             SongOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + "     ->     ";
         }
 
