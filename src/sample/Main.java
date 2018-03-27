@@ -10,6 +10,12 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * このクラスは、mainメソッドをもっている。
+ * UIの表示とSongData.txtからのデータの読み込みを行う。
+ * @author Sato Masaya
+ */
+
 public class Main extends Application {
 
     /**

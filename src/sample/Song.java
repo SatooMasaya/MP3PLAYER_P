@@ -1,7 +1,7 @@
 package sample;
 
 /**
- *
+ * SongData.txtに書かれた１曲が、これに代入される。
  * @author Sato Masaya
  */
 public class Song {

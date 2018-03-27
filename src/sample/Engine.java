@@ -7,55 +7,73 @@ import java.io.*;
 
 
 /**
- * next「次へ再生」、shuffle「シャッフル再生」の仕様
+ * Engineクラスには大きな役割が４つある。
+ * SongEngineはSongData.txtに記載されている曲を読み取り、nowListにいれる。
+ * nowListに入っている曲順をランダムに入れ替える。
+ * nowListのどの要素（番号）の曲を流すかの情報NowPlayingNumberをもつ。
+ * これから流れる曲を先読みしてUIに表示できるよう準備する。
  * @author Sato Masaya
  */
 public class Engine implements ShuffleEngine{
 
-    /**先読みする曲の上限数*/
-    public final Integer PEEK_MAX = 5;
-
-    /**ラブシャッフルするとき、ソートするときの優先度数*/
-    public final Integer LOVE_VALUE_MAX = 5;
-
-    /**再生番号*/
-    int NowPlayingNumber = 0;
-    //再生ボタンを押した時、再生番号NowPlayingNumberに対応するリストの曲を再生
-
     /**SongDataにある曲の総数*/
     int total = 0;
 
-    /**PEEKMAX分の曲名を保存するテキスト*/
-    String SongOrderText = "";
-    //このテキストは、テキストフィールドSongOrderTextFieldに表示される
+    /**
+     * UIの下部に表示するテキスト。
+     * PEEK_MAX分の曲名を保存するテキスト。このテキストは、テキストフィールドSongOrderTextFieldに表示される。
+     */
+    String songOrderText = "";
 
-    /**今のリスト*/
+    /**
+     * 再生番号。
+     * 再生ボタンを押した時、再生番号nowPlayingNumberに対応するリストの曲を再生する。
+     */
+    int nowPlayingNumber = 0;
+
+    /**
+     * 今のリスト。
+     * Song型の変数を要素とするリスト。再生ボタンを押すとこのリストのnowPlayingNumber番目の曲が流れる。
+     */
     List<Song> nowList = new ArrayList<Song>();
 
 
+    /**先読みする曲の上限数*/
+    public final Integer PEEK_MAX = 5;
+
     /**
-     * 今のリストNowListにすべての曲を保存するメソッド
-     * @param songs 曲の配列
+     * 優先度の上限。
+     * ラブシャッフルするとき、ソートするときの優先度の上限数
+     */
+    public final Integer LOVE_VALUE_MAX = 5;
+
+
+    /**
+     * セットソングスメソッド。
+     * 今のリストnowListにすべての曲を保存するメソッド。
+     * メソッドsetSongData()の中で使われる。
+     * @param songs SongData.txtで得られるすべての曲は配列として保存される。その配列が引数songsに入れられる。
      */
     public void setSongs(Song[] songs){
 
-        //今のリストNowListにすべての曲（TOTAL分の曲）を保存
-        for (int i = 0; i < total; i++) {
+        for (int i = 0; i < total; i++) {//今のリストnowListにすべての曲（total分の曲）を保存
             nowList.add(songs[i]);
         }
 
     }
 
     /**
-     * 全曲の名前データ(SongData)を読み込みNowListに保存するメソッド
-     * @throws IOException
+     *
+     * 全曲のデータ(SongData.txt)を読み込み、NowListに保存するメソッド。
+     * このメソッドはMainクラスの中で使われる。
+     * @throws IOException 入出力エラーが発生した場合
      */
     public void setSongData() throws IOException{
 
         String songname = "";
         int lovevalue = 0;
         int line = 0;//曲数のカウント
-        Song[] ss;//代入用
+        Song[] songs;//代入用。すべての曲がnowListに保存される。
 
 
         //データにいくつ曲が入っているかの確認をする。
@@ -66,9 +84,9 @@ public class Engine implements ShuffleEngine{
         total = line;//総曲数を記録する。
 
 
-        //配列ssにすべての曲を代入する。
+        //配列songsにすべての曲を代入する。
         br = new BufferedReader(new InputStreamReader(new FileInputStream("SongData.txt"), "SJIS"));
-        ss = new Song[total];
+        songs = new Song[total];
         String entry;//一行の文を一時記録する変数
         line = 0;
 
@@ -77,64 +95,69 @@ public class Engine implements ShuffleEngine{
             if (sc.hasNext()) songname = sc.next();//曲名取得
             if (sc.hasNextInt()) lovevalue = sc.nextInt();//曲の優先度取得
             System.out.println(line + songname + lovevalue);
-            ss[line] = new Song(songname, lovevalue);//Songに曲データをいれる
+            songs[line] = new Song(songname, lovevalue);//Songに曲データをいれる
             line++;
         }
         br.close();
 
-        //nowListに保存する
-        setSongs(ss);
+        setSongs(songs);//nowListに保存する
     }
 
     /**
-     * 次に再生する曲を手に入れるメッソド
-     * @return nextSong
+     * 次に再生する曲を手に入れるメソッド。
+     * 再生番号を+１して、次に再生する曲を返す。
+     * このメソッドは、onNextPlayButtonClickedメソッドの中で使われる。
+     * @return nextSong この返り値は、onBackPlayButtonClickedメソッドの中で、次の曲の名前を取得するときに使う。
      */
     public Song getNextSong(){
 
         //再生番号を+１
-        NowPlayingNumber++;
+        nowPlayingNumber++;
 
-        //もしすべての曲が流れたら、最初の曲に戻る
-        if (NowPlayingNumber == total) {
-            NowPlayingNumber = 0;
+
+        if (nowPlayingNumber == total) {//もしすべての曲が流れたら、最初の曲に戻る
+            nowPlayingNumber = 0;
         }
 
         //Song型で宣言
-        Song nextSong = nowList.get(NowPlayingNumber);
+        Song nextSong = nowList.get(nowPlayingNumber);
 
         return nextSong;
 
     }
 
     /**
-     * 前の曲を再生するメソッド
-     * @return backSong
+     * 前の曲を手に入れるメソッド。
+     * 再生番号を-1して、前に再生した曲を返す。
+     * このメソッドは、onBackPlayButtonClickedメソッドの中で使われる。
+     * @return backSong この返り値は、onBackPlayButtonClickedメソッドの中で、前の曲の名前を取得するときに使う。
      */
     public Song getBackSong() {
 
         //再生番号を-１してオーディオにセット
-        NowPlayingNumber--;
+        nowPlayingNumber--;
 
-        /*
-         *もし最初の曲が聴ける状態(NowPlayingNumberに0が代入されている状態)で
-         * 前へ再生をおしたら(このメソッドが呼ばれたら)
-         */
-        if (NowPlayingNumber == -1) {
-            NowPlayingNumber = 0;
+
+        if (nowPlayingNumber == -1) {
+            /*
+             * もし最初の曲が聴ける状態(nowPlayingNumberに0が代入されている状態)で
+             * 前へ再生ボタンをおしたら(このメソッドが呼ばれたら)
+             */
+            nowPlayingNumber = 0;
         }
 
         //Song型で宣言
-        Song backSong = nowList.get(NowPlayingNumber);
+        Song backSong = nowList.get(nowPlayingNumber);
 
         return backSong;
     }
 
     /**
      *  シャッフルメソッド
-     *  @param list
-     *　最初に1巡分の曲順を決定しておくロジックである。
      *  1巡分の曲順を決めるとき、前の一巡分の曲順とかぶらないように決めている。
+     *  このメソッドは、loveShuflle、onShufflePlayButtonClickedメソッドの中で使用される。
+     *  @param list onShufflePlayButtonClickedメソッドの中では、引数listに代入される変数はnowListである。
+     *              loveshuffleメソッドの中では、引数listにloveList[i]が代入される。
      */
     public void shuffle(List<Song> list){
 
@@ -174,7 +197,7 @@ public class Engine implements ShuffleEngine{
 
             //再生番号を１番（リストの要素は０に対応）にする
             if (i == total-1) {
-                NowPlayingNumber = 0;
+                nowPlayingNumber = 0;
 
                 //この改行は、プロンプト上の出力結果に表示されるnowListの全要素（一巡の曲たち）が見やすくなる。
                 //消しても動作に影響はない。
@@ -187,8 +210,8 @@ public class Engine implements ShuffleEngine{
 
     /**
      * ラブシャッフルメソッド
-     * nowListにある曲Songの値LoveValueを基準に、その値が高い曲からランダムにソートされ、
-     * nowListには、高い優先度の曲から入る。
+     * nowListにある曲Songの値loveValueを基準に、その値が高い曲からランダムにソートされ、nowListには、高い優先度の曲から入る。
+     * このメソッドは、onShufflePlayButtonClickedメソッドの中で使用される。
      */
     public void loveShuffle() {
 
@@ -239,41 +262,41 @@ public class Engine implements ShuffleEngine{
 
     /**
      * 今のリストから先読みするメソッド
-     * @return Songs
-     * PEEKMAXの数を上限として,
-     * 次に再生する予定の曲を先読みして配列として返します。
-     * ただし、次に返す曲の状態（再生番号）は変わりません。
+     * 次に再生する予定の曲をPEEK_MAX分先読みして配列として返します。
+     * このメソッドは、getSongOrderTextメソッドの中で使われます。
+     * @return songs 返り値は、次に再生する予定の曲で、PEEK_MAX個の配列数をもつ配列とする。
      */
 
     public Song[] peekQueue(){
 
         //PEEKMAXの数を上限とする配列を宣言
-        Song[] Songs = new Song[PEEK_MAX];
+        Song[] songs = new Song[PEEK_MAX];
 
             /*
             配列に今のリストNowListの曲を入れる。
-            今の曲番号（NowPlayingNumber）から数えてPEEKMAX分の曲を入れる。
-            順に入れていって最後の曲を入れても、未代入のSongs[i]があるとき
+            今の曲番号（nowPlayingNumber）から数えてPEEK_MAX分の曲を入れる。
+            順に入れていって最後の曲を入れても、未代入のsongs[i]があるとき
             最初の曲を順に入れる。
             */
         for (int i = 0; i < PEEK_MAX; i++) {
-            Songs[i] = nowList.get((NowPlayingNumber + i) % total);
+            songs[i] = nowList.get((nowPlayingNumber + i) % total);
         }
 
-        return Songs;
+        return songs;
     }
 
     /**
      * 曲順を手に入れるメソッド
-     * @return SongOrderText
+     * このメソッドは、autoPlayメソッドの中で使われる。
+     * @return songOrderText この返り値が、UIの下部に表示される。
      */
     public String getSongOrderText(){
-        //SongOrderTextにPEEKMAX分の曲名を曲順に並べて保存している。
+        //SongOrderTextにPEEK_MAX分の曲名を曲順に並べて保存している。
         for (int i = 0; i < PEEK_MAX; i++) {
-            SongOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + "     ->     ";
+            songOrderText += "#" + (i + 1) + "," + peekQueue()[i].name + "     ->     ";
         }
 
-        return SongOrderText;
+        return songOrderText;
 
     }
 }

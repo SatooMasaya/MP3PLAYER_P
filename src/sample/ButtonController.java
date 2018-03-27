@@ -12,7 +12,9 @@ import static sample.Main.media;
 import static sample.Main.mplayer;
 
 /**
- * ボタンを押したときのアクションの仕様
+ * ButtonControllerクラスは、主にボタンが押されたときのアクションを書いている。
+ * このクラスはautoPlayメソッドを持っている。
+ * このメソッドは、自動再生（今の曲が終了したら次の曲がかかる）を可能にする。
  * @author Sato Masaya
  */
 
@@ -29,17 +31,22 @@ public class ButtonController {
     public TextField nowPlayingTextField;
 
     /**
-     * ロック。再生中に、一時停止する時に使用する。falseのとき一時停止が可能。
+     * ロック。
+     * 再生中に、一時停止する時に使用する。
+     * trueのとき再生が可能。falseのとき一時停止が可能。
      */
     boolean lock = true;
 
     /**
-     * シャッフルモード。trueなら、なら、ラブシャッフル。falseなら、通常シャッフル。
+     * シャッフルモード。
+     * シャッフルモードは2種類ある。
+     * trueなら、ラブシャッフル。falseなら、通常シャッフル。
      */
     boolean loveShaffleMode = false;
 
     /**
      *  LoveButton（ラジオボタン）に確認マークがついているかの確認。
+     *  確認マークをつけた場合、ラブシャッフルモードになる。
      */
     boolean checkLoveButton = true;
 
@@ -47,8 +54,9 @@ public class ButtonController {
 
 
     /**
-     * 前へ再生ボタンアクションメソッド
-     * @param actionEvent
+     * 前へ再生ボタンアクションメソッド。
+     * 押すとnowListの( nowPlayingNumber - 1 )番目の曲が再生する。
+     * @param actionEvent 前へ再生ボタンが押されたとき、代入される。
      */
     public void onBackPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
@@ -63,26 +71,27 @@ public class ButtonController {
     }
 
     /**
-     * 再生ボタンアクションメソッド
-     * @param actionEvent
+     * 再生ボタンアクションメソッド。
+     *
+     * 押すとnowListのnowPlayingNumber番目の曲が再生する。
+     * @param actionEvent 再生ボタンが押されたとき、代入される。
      */
     public void onPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
         //一回押すと再生し、もう一度押すと一時停止する
         if (lock) {//再生ボタンをおした場合
-            // 曲が流れる。流れる曲はNowListの再生番号NowPlayingNumberである。そのあと自動再生。
-            autoPlay();
+            autoPlay();// 曲が流れる。流れる曲はNowListの再生番号nowPlayingNumberである。そのあと自動再生。
         }else{//再生中におした場合
-            //曲が止まる。
-            mplayer.pause();
-            lock = true;
+            mplayer.pause();//曲が止まる。
+            lock = true;//次に再生ボタンを押したとき、再生を可能にする。
         }
 
     }
 
     /**
-     * 次へ再生ボタンアクションメソッド
-     * @param actionEvent
+     * 次へ再生ボタンアクションメソッド。
+     * 押すとnowListの( nowPlayingNumber + 1 )番目の曲が再生する。
+     * @param actionEvent 次へ再生ボタンが押されたとき代入される。
      */
     public void onNextPlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
@@ -97,8 +106,9 @@ public class ButtonController {
     }
 
     /**
-     * シャッフルボタンアクションメソッド
-     * @param actionEvent
+     * シャッフルボタンアクションメソッド。
+     * シャッフルモードの値に応じてシャッフルを行う。
+     * @param actionEvent シャッフルボタンが押されたとき、代入される。
      */
     public void onShufflePlayButtonClicked(javafx.event.ActionEvent actionEvent) {
 
@@ -112,12 +122,17 @@ public class ButtonController {
             SongEngine.shuffle(SongEngine.nowList);//シャッフルを実行。
         }
 
-        //シャッフル後、NowListのはじめの曲を再生。その後、自動再生。
+        //シャッフル後、nowListのはじめの曲を再生。その後、自動再生。
         media = new Media(new File(SongEngine.nowList.get(0).name + ".mp3").toURI().toString());
         mplayer = new MediaPlayer(media);
         autoPlay();
     }
 
+    /**
+     * ラブボタンアクションメソッド。
+     * シャッフルモードの切り替えを行う。
+     * @param actionEvent ラブボタンが押されたとき、代入される。
+     */
     public void onLoveButtonClicked(ActionEvent actionEvent) {
 
         if (checkLoveButton) {//LoveButton（ラジオボタン）の確認マークをつけたら
@@ -132,13 +147,14 @@ public class ButtonController {
     }
 
     /**
-     * オートプレイメソッド
-     * 自動再生（今の曲をきいたら、次の曲が自動でかかる）を可能にするメソッド
+     * オートプレイメソッド。
+     * 自動再生（今の曲をきいたら、次の曲が自動でかかる）を可能にする。
+     * onLoveButtonClickedを除く上のすべてのメソッドで使われている。
      */
     public void autoPlay(){
-        Runnable[]repeatFunc = new Runnable[SongEngine.total - SongEngine.NowPlayingNumber +1];//NowListの中でまだ聴いていない分の曲数を配列数として配列を用意する
+        Runnable[]repeatFunc = new Runnable[SongEngine.total - SongEngine.nowPlayingNumber +1];//NowListの中でまだ聴いていない分の曲数を配列数として配列を用意する
 
-        for (int i = 0; i < SongEngine.total - SongEngine.NowPlayingNumber; i++) {
+        for (int i = 0; i < SongEngine.total - SongEngine.nowPlayingNumber; i++) {
             int cnt = i;//カウント変数cntはiと同じ値をとる。iだと思ってよい。
 
             //Runnable関数repeatFunc[cnt + 1]を定義します。
@@ -151,11 +167,11 @@ public class ButtonController {
                 lock = false;//一時停止可能状態にする。
 
                 //上のテキストフィールドに次の再生中の曲名を表示する
-                nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
+                nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.nowPlayingNumber).name);
 
-                //下のテキストフィールドにPEEKMAX分の曲順を表示する。
+                //下のテキストフィールドにPEEK_MAX分の曲順を表示する。
                 songOrderTextField.setText(SongEngine.getSongOrderText());
-                SongEngine.SongOrderText = "";
+                SongEngine.songOrderText = "";
             };
         }
 
@@ -169,11 +185,11 @@ public class ButtonController {
             lock = false;//一時停止可能状態にする
 
             //上のテキストフィールドに次の再生中の曲名を表示する
-            nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
+            nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.nowPlayingNumber).name);
 
-            //下のテキストフィールドにPEEKMAX分の曲順を表示する。
+            //下のテキストフィールドにPEEK_MAX分の曲順を表示する。
             songOrderTextField.setText(SongEngine.getSongOrderText());
-            SongEngine.SongOrderText = "";
+            SongEngine.songOrderText = "";
         };
 
         mplayer.setOnEndOfMedia(repeatFunc[0]);//mplayerの再生終了時の設定を決定する。設定内容はRunnable関数repeatFunc[0]である。
@@ -181,11 +197,11 @@ public class ButtonController {
         lock = false;//一時停止可能状態にする
 
         //上のテキストフィールドに次の再生中の曲名を表示する
-        nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.NowPlayingNumber).name);
+        nowPlayingTextField.setText("Now playing  " + SongEngine.nowList.get(SongEngine.nowPlayingNumber).name);
 
-        //下のテキストフィールドにPEEKMAX分の曲順を表示する。
+        //下のテキストフィールドにPEEK_MAX分の曲順を表示する。
         songOrderTextField.setText(SongEngine.getSongOrderText());
-        SongEngine.SongOrderText = "";
+        SongEngine.songOrderText = "";
 
     }
 }

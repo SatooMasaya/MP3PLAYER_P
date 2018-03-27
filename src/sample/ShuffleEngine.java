@@ -1,7 +1,7 @@
 package sample;
 
 /**
- *
+ * Engineクラスに実装されるインターフェイス。
  * @author Sato Masaya
  */
 public interface ShuffleEngine {
